@@ -25,7 +25,7 @@ const currentUrl = createIsomorphicFn()
 function configUrl() {
 	return new URL(
 		`${import.meta.env.BASE_URL}site.config.json`,
-		currentUrl(),
+		import.meta.env.VITE_SITE_URL || currentUrl(),
 	).toString();
 }
 
