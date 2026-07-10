@@ -28,6 +28,7 @@ pnpm build
 pnpm preview
 ```
 
+
 The build recursively discovers linked resources and writes prerendered HTML to `dist/client`. It also creates `404.html`, allowing GitHub Pages to hydrate live IIIF resources that were added after the build. Those live resources work immediately, but get route-specific SEO HTML only after the next build.
 
 ## GitHub Pages
