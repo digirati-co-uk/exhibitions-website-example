@@ -17,7 +17,6 @@ function Home() {
 	return (
 		<main id="main" className="page">
 			<section className="hero">
-				<span className="eyebrow">Exhibitions</span>
 				<h1>{text(site.info.label, language) || "Exhibitions"}</h1>
 				{text(site.info.summary, language) ? (
 					<p>{text(site.info.summary, language)}</p>

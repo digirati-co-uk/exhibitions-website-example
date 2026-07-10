@@ -1,11 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-	breadcrumbs,
-	imageId,
-	type SiteData,
-	type SiteNode,
-	text,
-} from "#/lib/iiif";
+import { breadcrumbs, type SiteData, type SiteNode, text } from "#/lib/iiif";
 
 export function Cards({
 	nodes,
@@ -18,36 +12,26 @@ export function Cards({
 		return <p className="empty">There are no exhibitions here yet.</p>;
 	return (
 		<div className="cards">
-			{nodes.map((node) => {
-				const image = imageId(node.resource, "thumbnail");
-				return (
-					<article className="card" key={node.resource.id}>
-						{image ? (
-							<img src={image} alt="" loading="lazy" />
-						) : (
-							<div className="card-placeholder" />
-						)}
-						<div className="card-body">
-							<span className="eyebrow">
-								{node.resource.type === "Manifest"
-									? "Exhibition"
-									: "Collection"}
-							</span>
-							<h2>
-								<Link to="/$" params={{ _splat: node.path }}>
-									{text(node.resource.label, language) || "Untitled"}
-								</Link>
-							</h2>
-							{text(node.resource.summary, language) ? (
-								<p>{text(node.resource.summary, language)}</p>
-							) : null}
-							{node.error ? (
-								<p role="alert">This collection is currently unavailable.</p>
-							) : null}
-						</div>
-					</article>
-				);
-			})}
+			{nodes.map((node) => (
+				<article className="card" key={node.resource.id}>
+					<div className="card-body">
+						<span className="eyebrow">
+							{node.resource.type === "Manifest" ? "Exhibition" : "Collection"}
+						</span>
+						<h2>
+							<Link to="/$" params={{ _splat: node.path }}>
+								{text(node.resource.label, language) || "Untitled"}
+							</Link>
+						</h2>
+						{text(node.resource.summary, language) ? (
+							<p>{text(node.resource.summary, language)}</p>
+						) : null}
+						{node.error ? (
+							<p role="alert">This collection is currently unavailable.</p>
+						) : null}
+					</div>
+				</article>
+			))}
 		</div>
 	);
 }

@@ -1,19 +1,17 @@
 @import "tailwindcss";
 
 :root {
-	--font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-		"Helvetica Neue", Arial, sans-serif;
-	--font-serif: "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman",
-		serif;
-	--color-paper: #f7f5f0;
-	--color-surface: #fffdfa;
-	--color-ink: #201d1a;
-	--color-muted: #6b6459;
-	--color-border: #e2dccd;
-	--color-line: #d3cbb8;
-	--color-accent: #7a3327;
-	--color-accent-ink: #fff8f2;
-	--site-header-height: calc(4.25rem + 1px);
+	--font-sans: "proxima-nova", Arial, sans-serif;
+	--font-serif: "utopia-std", Georgia, serif;
+	--color-paper: #eee5dc;
+	--color-surface: #d8d2cc;
+	--color-ink: #24282a;
+	--color-muted: #51504c;
+	--color-border: #c9bfb5;
+	--color-line: #b5aaa0;
+	--color-accent: #916f40;
+	--color-accent-ink: #fff;
+	--site-header-height: 4.75rem;
 	color: var(--color-ink);
 	background: var(--color-paper);
 	font-family: var(--font-sans);
@@ -30,24 +28,23 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 .skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; padding: .6rem 1rem; border-radius: .2rem; background: var(--color-ink); color: var(--color-accent-ink); transform: translateY(-200%); transition: transform .15s ease; }
 .skip-link:focus { transform: none; }
 
-.site-header { position: relative; z-index: 10; border-bottom: 1px solid var(--color-border); background: rgba(247, 245, 240, .92); backdrop-filter: blur(8px); }
-.brand { display: flex; align-items: center; gap: .7rem; max-width: 76rem; min-height: 4.25rem; margin: auto; padding: .6rem 1.5rem; text-decoration: none; }
-.brand img { width: 2.35rem; height: 2.35rem; object-fit: contain; }
-.brand span { font-family: var(--font-serif); font-weight: 600; font-size: 1.2rem; letter-spacing: -.01em; }
+.site-header { position: relative; z-index: 40; background: #222; color: #fff; }
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 2rem; max-width: 90rem; min-height: var(--site-header-height); margin: auto; padding: .65rem 1.5rem; text-decoration: none; }
+.site-title { overflow: hidden; font-family: var(--font-serif); font-size: clamp(1.05rem, 2.2vw, 1.45rem); font-weight: 600; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.leeds-logo { width: 11.45rem; height: 3.3rem; object-fit: contain; }
 
 .page { width: min(76rem, calc(100% - 3rem)); margin: 0 auto; padding: 3.5rem 0 5rem; }
 
-.hero { max-width: 42rem; margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+.hero { max-width: 50rem; margin-bottom: 3.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
 .eyebrow { display: inline-flex; align-items: center; gap: .55rem; text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; font-weight: 600; color: var(--color-accent); }
 .eyebrow::before { content: ""; width: 1.25rem; height: 1px; background: currentColor; }
-.hero h1 { margin: .65rem 0 1rem; font-family: var(--font-serif); font-weight: 550; font-size: clamp(2rem, 4.2vw, 3.4rem); line-height: 1.08; letter-spacing: -.01em; }
+.hero h1 { margin: .65rem 0 1rem; font-family: var(--font-serif); font-weight: 700; font-size: clamp(2.5rem, 6vw, 4.8rem); line-height: .98; letter-spacing: -.025em; }
 .hero p { max-width: 40rem; font-size: clamp(1rem, 1.3vw, 1.15rem); color: var(--color-muted); }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr)); gap: 2rem 1.75rem; }
-.card { overflow: hidden; border: 1px solid var(--color-border); border-radius: 2px; background: var(--color-surface); transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+.card { overflow: hidden; border: 0; background: var(--color-surface); transition: transform .15s ease, box-shadow .15s ease; }
 .card:hover { border-color: var(--color-line); transform: translateY(-2px); box-shadow: 0 .6rem 1.5rem rgba(32, 29, 26, .07); }
-.card img, .card-placeholder { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: linear-gradient(135deg, #ece6d8, #ded4bf); }
-.card-body { padding: 1.25rem 1.35rem 1.5rem; border-top: 1px solid var(--color-border); }
+.card-body { padding: 1.5rem; }
 .card .eyebrow { font-size: .68rem; }
 .card h2 { margin: .5rem 0 .5rem; font-family: var(--font-serif); font-weight: 550; font-size: 1.3rem; line-height: 1.3; }
 .card h2 a { text-decoration: none; }
@@ -67,10 +64,11 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 .breadcrumbs [aria-current="page"] { color: var(--color-ink); font-weight: 600; }
 
 .viewer { width: 100%; min-height: 70vh; margin: 0 auto 4rem; }
-.viewer-scroll { width: 100%; }
+.viewer-scroll { width: 100%; --exv-scroll-title-background: var(--color-paper); --exv-scroll-title-color: var(--color-ink); --exv-scroll-annotation-background: var(--color-surface); --exv-scroll-annotation-color: var(--color-ink); --exv-scroll-annotation-radius: 0; --exv-scroll-annotation-max-width: 34em; --exv-scroll-info-block-background: #222; --exv-scroll-info-block-color: #fff; --exv-scroll-splash-overlay: rgba(0, 0, 0, .48); }
 .viewer-scroll .exv-scroll > :first-child { position: sticky !important; top: 0 !important; z-index: 30 !important; }
 .viewer-slideshow { height: calc(100dvh - var(--site-header-height)); }
 .viewer-slideshow .exhibition-slideshow-slide > * { width: 100%; }
+.viewer-fullpage, .viewer-slideshow { --delft-background: var(--color-paper); --delft-background-secondary: var(--color-surface); --delft-text: var(--color-ink); --delft-muted-text: var(--color-muted); --delft-accent: var(--color-accent); --delft-control-bar: #222; --delft-control-bar-border: #111; --delft-control-hover: rgba(255, 255, 255, .12); --delft-progress-bar: var(--color-accent); --delft-close-background: #222; --delft-close-background-hover: #333; --delft-close-text: #fff; --delft-title-card: var(--color-surface); --delft-title-card-text: var(--color-ink); --delft-info-block: #222; --delft-info-block-text: #fff; --delft-viewer-background: #222; --delft-title-transform: none; }
 .viewer-fullpage { max-width: 100rem; margin-bottom: 4.5rem; padding-top: 2em }
 
 .empty, .error { padding: 3rem; border: 1px dashed var(--color-line); border-radius: 2px; background: var(--color-surface); color: var(--color-muted); text-align: center; }
@@ -80,6 +78,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 footer { border-top: 1px solid var(--color-border); padding: 2rem 1.5rem; text-align: center; color: var(--color-muted); font-size: .85rem; }
 
 @media (max-width: 36rem) {
+	.leeds-logo { width: 2rem; object-position: right; }
 	.page { width: min(100% - 2rem, 76rem); padding-top: 2rem; }
 	.metadata div { grid-template-columns: 1fr; gap: .2rem; }
 }

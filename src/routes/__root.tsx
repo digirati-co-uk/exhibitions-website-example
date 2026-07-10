@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestUrl } from "@tanstack/react-start/server";
-import { imageId, text } from "#/lib/iiif";
+import { text } from "#/lib/iiif";
 import { siteQuery } from "#/lib/queries";
 import appCss from "../styles.css?url";
 import "exhibition-viewer/dist/index.css";
@@ -56,10 +56,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 				href: "https://fonts.gstatic.com",
 				crossOrigin: "anonymous",
 			},
-			{
-				rel: "stylesheet",
-				href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,550;9..144,600&display=swap",
-			},
+			{ rel: "stylesheet", href: "https://use.typekit.net/xpd0xwa.css" },
 			{ rel: "stylesheet", href: appCss },
 		],
 	}),
@@ -82,7 +79,6 @@ function SiteLayout() {
 	const { data } = useSuspenseQuery(siteQuery(configUrl));
 	const language = data.config.defaultLanguage;
 	const name = text(data.info.label, language) || "Exhibitions";
-	const logo = imageId(data.info, "logo");
 	const provider = (data.info.provider || [])
 		?.map((item) => text(item.label, language))
 		.filter(Boolean)
@@ -94,8 +90,12 @@ function SiteLayout() {
 			</a>
 			<header className="site-header">
 				<Link to="/" className="brand">
-					{logo ? <img src={logo} alt="" /> : null}
-					<span>{name}</span>
+					<span className="site-title">{name}</span>
+					<img
+						className="leeds-logo"
+						src={`${import.meta.env.BASE_URL}logo.svg`}
+						alt="University of Leeds"
+					/>
 				</Link>
 			</header>
 			<Outlet />
