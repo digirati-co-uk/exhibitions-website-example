@@ -35,6 +35,12 @@ export interface DescriptiveResource {
 	seeAlso?: LinkingResource[];
 	service?: Service[];
 	provider?: DescriptiveResource[];
+	requiredStatement?: {
+		label?: InternationalString;
+		value?: InternationalString;
+	};
+	rights?: string;
+	rendering?: LinkingResource[];
 	behavior?: string[];
 }
 
@@ -114,6 +120,14 @@ function httpUrl(value: string) {
 		throw new Error("Expected an HTTP(S) URL without credentials");
 	}
 	return url;
+}
+
+export function safeHttpUrl(value: string) {
+	try {
+		return httpUrl(value);
+	} catch {
+		return null;
+	}
 }
 
 function withoutTrailingSlash(pathname: string) {

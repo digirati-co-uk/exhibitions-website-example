@@ -6,18 +6,47 @@ import {
 	createRouter,
 	RouterProvider,
 } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ResourcePageData, SiteIndexEntry } from "#/lib/site-data";
 import { ExhibitionViewer } from "./exhibition";
-import { ManifestPage } from "./manifest";
-import { Cards, CollectionPage, Header } from "./site";
+import { canvasDownload, ManifestPage } from "./manifest";
+import { Cards, CollectionPage, externalViewerLinks, Header } from "./site";
+
+vi.mock("react-iiif-vault", () => ({
+	LanguageProvider: ({ children }: { children: ReactNode }) => children,
+	SimpleViewerProvider: ({
+		children,
+		manifest,
+	}: {
+		children: ReactNode;
+		manifest: string;
+	}) => (
+		<div data-testid="simple-viewer" data-manifest={manifest}>
+			{children}
+		</div>
+	),
+	ManifestMetadata: () => <table data-testid="manifest-metadata" />,
+	SequenceThumbnails: () => <div data-testid="sequence-thumbnails" />,
+	useSimpleViewer: () => ({
+		sequence: [[0], [1]],
+		currentSequenceIndex: 0,
+		items: [{ id: "canvas-1" }, { id: "canvas-2" }],
+		hasPrevious: false,
+		hasNext: true,
+		previousCanvas: vi.fn(),
+		nextCanvas: vi.fn(),
+	}),
+}));
 
 vi.mock("react-iiif-vault/canvas-panel", () => ({
-	CanvasPanel: ({ manifest }: { manifest: string }) => (
-		<div data-testid="canvas-panel" data-manifest={manifest} />
-	),
+	CanvasPanel: {
+		Viewer: ({ children }: { children: ReactNode }) => (
+			<div data-testid="canvas-panel">{children}</div>
+		),
+		RenderCanvas: () => <div data-testid="render-canvas" />,
+	},
 }));
 
 vi.mock("exhibition-viewer/library", () => ({
@@ -123,18 +152,80 @@ describe("site components", () => {
 		expect(screen.queryByRole("link", { name: "Exhibitions" })).toBeNull();
 	});
 
-	it("renders CanvasPanel with the resolved remote Manifest URL", async () => {
-		const entry = manifestEntry;
+	it("renders multi-canvas controls, metadata, and a safe image download", async () => {
+		const entry = {
+			...manifestEntry,
+			requiredStatement: {
+				label: { en: ["Credit"] },
+				value: { en: ["Example archive"] },
+			},
+			rights: "https://creativecommons.org/licenses/by/4.0/",
+		};
 		const page: ResourcePageData = {
 			entry,
-			resource: { ...entry, type: "Manifest" },
+			resource: {
+				...entry,
+				type: "Manifest",
+				items: [
+					{
+						id: "canvas-1",
+						items: [
+							{
+								items: [
+									{
+										motivation: "painting",
+										body: {
+											id: "https://images.test/full.jpg",
+											type: "Image",
+											width: 1200,
+											height: 800,
+										},
+									},
+								],
+							},
+						],
+					},
+					{ id: "canvas-2" },
+				],
+			},
 			jsonUrl: entry.id,
 			breadcrumbs: [entry],
 		};
 		render(<ManifestPage page={page} language="en" />);
 		expect(
-			(await screen.findByTestId("canvas-panel")).getAttribute("data-manifest"),
+			(await screen.findByTestId("simple-viewer")).getAttribute(
+				"data-manifest",
+			),
 		).toBe(entry.id);
+		expect(screen.getByRole("application")).toBeTruthy();
+		expect(
+			screen.getByRole("button", { name: "Previous canvas" }),
+		).toHaveProperty("disabled", true);
+		expect(screen.getByText("Canvas 1 of 2")).toBeTruthy();
+		expect(screen.getByTestId("sequence-thumbnails")).toBeTruthy();
+		expect(screen.getByTestId("manifest-metadata")).toBeTruthy();
+		expect(screen.getByText("Example archive")).toBeTruthy();
+		expect(
+			screen.getByRole("link", { name: "Full image (1200 × 800)" }),
+		).toHaveProperty("href", "https://images.test/full.jpg");
+	});
+
+	it("shows a clear no-canvas state", () => {
+		render(
+			<ManifestPage
+				page={{
+					entry: manifestEntry,
+					resource: { ...manifestEntry, type: "Manifest", items: [] },
+					jsonUrl: manifestEntry.id,
+					breadcrumbs: [manifestEntry],
+				}}
+				language="en"
+			/>,
+		);
+		expect(
+			screen.getByText("This Manifest has no canvases to display."),
+		).toBeTruthy();
+		expect(screen.queryByTestId("simple-viewer")).toBeNull();
 	});
 
 	it("keeps unavailable Manifest context without mounting CanvasPanel", () => {
@@ -146,7 +237,29 @@ describe("site components", () => {
 			/>,
 		);
 		expect(screen.getByRole("heading", { name: "Object" })).toBeTruthy();
+		expect(screen.getByRole("alert").textContent).toContain("build-known");
 		expect(screen.queryByTestId("canvas-panel")).toBeNull();
+	});
+
+	it("reports copy success without changing the action label", async () => {
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, "clipboard", {
+			configurable: true,
+			value: { writeText },
+		});
+		render(
+			<ManifestPage
+				page={{
+					entry: manifestEntry,
+					resource: { ...manifestEntry, type: "Manifest", items: [] },
+					breadcrumbs: [manifestEntry],
+				}}
+				language="en"
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Copy page URL" }));
+		expect(await screen.findByText("Page URL copied")).toBeTruthy();
+		expect(writeText).toHaveBeenCalledWith(window.location.href);
 	});
 
 	it("keeps unavailable Collection page context", () => {
@@ -185,5 +298,87 @@ describe("site components", () => {
 			/>,
 		);
 		expect(screen.getByTestId("scroll")).toBeTruthy();
+	});
+});
+
+describe("Manifest helpers", () => {
+	it("resolves Image API 3, legacy Image API 2, and direct image bodies", () => {
+		const canvas = (body: unknown, motivation: unknown = "painting") => ({
+			items: [{ items: [{ motivation, body }] }],
+		});
+		expect(
+			canvasDownload(
+				canvas({
+					type: "Image",
+					service: { id: "https://images.test/v3", type: "ImageService3" },
+				}),
+			)?.url,
+		).toBe("https://images.test/v3/full/max/0/default.jpg");
+		expect(
+			canvasDownload(
+				canvas({
+					format: "image/jpeg",
+					service: {
+						"@id": "https://images.test/v2/",
+						"@type": "ImageService2",
+					},
+				}),
+			)?.url,
+		).toBe("https://images.test/v2/full/full/0/default.jpg");
+		expect(
+			canvasDownload(
+				canvas(
+					[{ id: "https://images.test/direct.jpg", type: "Image" }],
+					["painting"],
+				),
+			)?.url,
+		).toBe("https://images.test/direct.jpg");
+	});
+
+	it("rejects unsafe, non-image, and non-painting downloads", () => {
+		const canvas = (annotation: unknown) => ({
+			items: [{ items: [annotation] }],
+		});
+		expect(
+			canvasDownload(
+				canvas({
+					motivation: "painting",
+					body: { type: "Image", id: "https://user:secret@images.test/a" },
+				}),
+			),
+		).toBeUndefined();
+		expect(
+			canvasDownload(
+				canvas({
+					motivation: "commenting",
+					body: { type: "Image", id: "https://images.test/a" },
+				}),
+			),
+		).toBeUndefined();
+		expect(
+			canvasDownload(
+				canvas({
+					motivation: "painting",
+					body: { type: "Text", id: "https://images.test/a" },
+				}),
+			),
+		).toBeUndefined();
+	});
+
+	it("builds external viewer URLs without double encoding", () => {
+		const manifest = "https://iiif.test/manifest/a%20b";
+		const links = externalViewerLinks(manifest);
+		expect(new URL(links[0]?.href || "").searchParams.get("iiif-content")).toBe(
+			manifest,
+		);
+		expect(new URL(links[1]?.href || "").searchParams.get("iiif-content")).toBe(
+			manifest,
+		);
+		expect(
+			new URLSearchParams(new URL(links[2]?.href || "").hash.slice(2)).get(
+				"manifest",
+			),
+		).toBe(manifest);
+		expect(externalViewerLinks("javascript:alert(1)")).toEqual([]);
 	});
 });

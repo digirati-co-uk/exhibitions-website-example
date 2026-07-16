@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { type DescriptiveResource, imageId, text } from "#/lib/iiif";
+import { useState } from "react";
+import {
+	type DescriptiveResource,
+	imageId,
+	safeHttpUrl,
+	text,
+} from "#/lib/iiif";
 import type { ResourcePageData, SiteIndexEntry } from "#/lib/site-data";
 
 export function Header({
@@ -101,22 +107,139 @@ export function Cards({
 export function Metadata({
 	resource,
 	language,
+	includeMetadata = true,
 }: {
 	resource: DescriptiveResource;
 	language: string;
+	includeMetadata?: boolean;
 }) {
-	if (!resource.metadata?.length) return null;
+	const providers = resource.provider?.filter((provider) => provider.id) || [];
+	const rights = resource.rights ? safeHttpUrl(resource.rights) : null;
+	const links = [
+		...(resource.homepage || []),
+		...(resource.seeAlso || []),
+		...(resource.rendering || []),
+	].filter((link) => safeHttpUrl(link.id));
+	if (
+		!(includeMetadata && resource.metadata?.length) &&
+		!providers.length &&
+		!rights &&
+		!links.length
+	)
+		return null;
 	return (
 		<dl className="metadata">
-			{resource.metadata.map((entry) => (
-				<div
-					key={`${text(entry.label, language)}:${text(entry.value, language)}`}
-				>
-					<dt>{text(entry.label, language)}</dt>
-					<dd>{text(entry.value, language)}</dd>
+			{providers.map((provider) => (
+				<div key={provider.id}>
+					<dt>Provider</dt>
+					<dd>{text(provider.label, language) || provider.id}</dd>
 				</div>
 			))}
+			{rights ? (
+				<div>
+					<dt>Rights</dt>
+					<dd>
+						<a href={rights.toString()} rel="noopener noreferrer">
+							{resource.rights}
+						</a>
+					</dd>
+				</div>
+			) : null}
+			{includeMetadata
+				? (resource.metadata || []).map((entry) => (
+						<div
+							key={`${text(entry.label, language)}:${text(entry.value, language)}`}
+						>
+							<dt>{text(entry.label, language)}</dt>
+							<dd>{text(entry.value, language)}</dd>
+						</div>
+					))
+				: null}
 		</dl>
+	);
+}
+
+export function RequiredStatement({
+	entry,
+	language,
+}: {
+	entry: SiteIndexEntry;
+	language: string;
+}) {
+	const value = text(entry.requiredStatement?.value, language);
+	if (!value) return null;
+	return (
+		<aside className="required-statement">
+			<strong>
+				{text(entry.requiredStatement?.label, language) || "Attribution"}
+			</strong>
+			<p>{value}</p>
+		</aside>
+	);
+}
+
+export function externalViewerLinks(manifestId: string) {
+	const manifest = safeHttpUrl(manifestId);
+	if (!manifest) return [];
+	const query = (base: string, key: string) => {
+		const url = new URL(base);
+		url.searchParams.set(key, manifest.toString());
+		return url.toString();
+	};
+	return [
+		{
+			label: "Theseus",
+			href: query("https://theseusviewer.org/", "iiif-content"),
+		},
+		{
+			label: "Mirador",
+			href: query("https://projectmirador.org/embed/", "iiif-content"),
+		},
+		{
+			label: "Universal Viewer",
+			href: `https://www.universalviewer.dev/uv.html#?manifest=${manifest}`,
+		},
+	];
+}
+
+export function ResourceActions({ entry }: { entry: SiteIndexEntry }) {
+	const [copyStatus, setCopyStatus] = useState("");
+	const source = safeHttpUrl(entry.id);
+	return (
+		<section className="resource-actions" aria-label="Resource actions">
+			<button
+				type="button"
+				onClick={async () => {
+					try {
+						if (!navigator.clipboard) throw new Error("Clipboard unavailable");
+						await navigator.clipboard.writeText(window.location.href);
+						setCopyStatus("Page URL copied");
+					} catch {
+						setCopyStatus("Unable to copy page URL");
+					}
+				}}
+			>
+				Copy page URL
+			</button>
+			{source ? (
+				<a href={source.toString()} rel="noopener noreferrer">
+					Open IIIF JSON
+				</a>
+			) : null}
+			{externalViewerLinks(entry.id).map((link) => (
+				<a
+					key={link.label}
+					href={link.href}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Open in {link.label}
+				</a>
+			))}
+			<output className="copy-status" aria-live="polite">
+				{copyStatus}
+			</output>
+		</section>
 	);
 }
 

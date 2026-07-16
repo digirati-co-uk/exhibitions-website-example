@@ -61,7 +61,7 @@ Collections are browsed one level at a time. Resource URLs beneath the root URL 
 
 Build-known grid cards use thumbnails from HSS's local Manifest index, without loading child Manifests at runtime.
 
-Only the exact marked direct info Collection is hidden. A nested Collection such as `/topics/info` remains browsable. `/collections` and `/exhibitions` are reserved application tabs.
+Only the exact marked direct info Collection is hidden. A nested Collection such as `/topics/info` remains browsable. `/collections` is reserved for browsing the root Collection.
 
 ## Manifest viewers
 
@@ -73,9 +73,9 @@ After classification, exhibition behavior selects the preset in this order:
 2. `scroll`
 3. the full-page exhibition viewer
 
-Ordinary Manifests use `react-iiif-vault`'s `CanvasPanel` with its default paging and media behavior.
+Ordinary Manifests use `react-iiif-vault`'s composable viewer with explicit previous/next controls, sequence thumbnails, plain-text metadata, and a current-image download when the selected Canvas exposes a safe image source. Required statements and related IIIF links render around the viewer, alongside actions for opening the source JSON, copying the page URL, and opening the Manifest in external viewers.
 
-The Exhibitions tab comes from `/iiif/collections/exhibitions/collection.json`, generated during the HSS build. It links to each Manifest's canonical hierarchy URL; it does not create duplicate exhibition routes.
+The Exhibitions navigation item appears only when the source hierarchy contains a Collection at `/exhibitions`. It links directly to that Collection and uses the same hierarchy routing as every other source resource.
 
 The homepage comes from `/iiif/collections/featured/collection.json`. A Manifest is included when its `behavior` contains the exact value `featured`; it may also be an exhibition. The Featured collection is build-indexed and updates on the next build.
 
@@ -83,7 +83,7 @@ The homepage comes from `/iiif/collections/featured/collection.json`. A Manifest
 
 Collection pages request only their own live remote Collection and display its direct references. New root-relative resources therefore appear in browsing immediately, and a new Manifest's live `behavior` chooses its viewer when visited. Non-root-relative dynamic children are resolved by walking only the requested ancestor chain.
 
-The Exhibitions tab, sitemap metadata, prerendered SEO, and build-known breadcrumbs update on the next build. Post-build hierarchy routes hydrate through `404.html`; they receive route-specific prerendered metadata after rebuilding.
+Navigation, sitemap metadata, prerendered SEO, and build-known breadcrumbs update on the next build. Post-build hierarchy routes hydrate through `404.html`; they receive route-specific prerendered metadata after rebuilding.
 
 The published HSS tree uses output format 1. The application reads `meta/build.json`, `meta/resources.json`, `meta/resource-descriptors.json`, and per-resource runtime metadata. Store configuration, request credentials, source paths, and debug metadata stay private and are not copied into the deployed tree.
 
@@ -98,7 +98,7 @@ pnpm build
 pnpm preview
 ```
 
-The build writes HSS artifacts and prerendered pages to `dist/client`, including `dist/client/iiif`, hierarchy pages, the Exhibitions page, and `404.html`.
+The build writes HSS artifacts and prerendered hierarchy pages to `dist/client`, including `dist/client/iiif`, a source Exhibitions Collection when present, and `404.html`.
 It also writes a portal-contract v1 `deploy.json` at the configured site base. This public deployment record contains the build time, validated root/site pair, and available Git/CI provenance so the customer portal can show what is deployed. The host must serve it as JSON and allow cross-origin `GET` requests from the portal (or `*`).
 `serve.json` also makes `pnpm dlx serve dist/client` use that fallback for post-build routes.
 

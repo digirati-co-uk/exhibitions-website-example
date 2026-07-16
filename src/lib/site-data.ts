@@ -130,6 +130,9 @@ function copyDescription(
 				"seeAlso",
 				"service",
 				"provider",
+				"requiredStatement",
+				"rights",
+				"rendering",
 				"behavior",
 			]
 				.filter(

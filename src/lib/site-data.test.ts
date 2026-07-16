@@ -63,6 +63,17 @@ const resources: Record<string, HssResource> = {
 		type: "Manifest",
 		label: { en: ["Show"] },
 		behavior: ["exhibition"],
+		requiredStatement: {
+			label: { en: ["Credit"] },
+			value: { en: ["Example archive"] },
+		},
+		rights: "https://creativecommons.org/licenses/by/4.0/",
+		rendering: [
+			{
+				id: "https://remote.test/root/folder/show.pdf",
+				label: { en: ["Download PDF"] },
+			},
+		],
 		"hss:slug": "source/root/folder/show",
 	},
 	"source/root/topics/info": {
@@ -255,6 +266,15 @@ describe("HSS output format 1 site index", () => {
 		expect(site.entriesByPath.get("folder/show")?.thumbnail?.[0]?.id).toBe(
 			"https://images.test/show.jpg",
 		);
+		expect(
+			site.entriesByPath.get("folder/show")?.requiredStatement?.value?.en?.[0],
+		).toBe("Example archive");
+		expect(site.entriesByPath.get("folder/show")?.rights).toBe(
+			"https://creativecommons.org/licenses/by/4.0/",
+		);
+		expect(
+			site.entriesByPath.get("folder/show")?.rendering?.[0]?.label?.en?.[0],
+		).toBe("Download PDF");
 		expect(site.repository).toBe("https://github.com/example/site");
 	});
 
@@ -420,6 +440,39 @@ describe("shallow page loading", () => {
 		);
 		expect(page?.jsonUrl).toBe(`${rootUrl}/folder`);
 		expect(page?.children).toHaveLength(1);
+	});
+
+	it("enriches a build-known entry with live Manifest presentation fields", async () => {
+		const manifestUrl = `${rootUrl}/folder/show`;
+		const fetchFn = mockFetch({
+			[`${baseUrl}iiif/source/root/folder/show/meta.json`]: {
+				"hss:runtime": {
+					type: "Manifest",
+					source: { type: "remote", url: manifestUrl },
+					saveToDisk: false,
+				},
+			},
+			[manifestUrl]: {
+				id: manifestUrl,
+				type: "Manifest",
+				requiredStatement: {
+					label: { en: ["Attribution"] },
+					value: { en: ["Live archive"] },
+				},
+				rights: "https://rights.test/live",
+				rendering: [
+					{ id: "https://files.test/live.pdf", label: { en: ["Live PDF"] } },
+				],
+				items: [],
+			},
+		});
+		const page = await createSiteData({ baseUrl, fetchFn }).loadResource(
+			index(),
+			"folder/show",
+		);
+		expect(page?.entry.requiredStatement?.value?.en?.[0]).toBe("Live archive");
+		expect(page?.entry.rights).toBe("https://rights.test/live");
+		expect(page?.entry.rendering?.[0]?.label?.en?.[0]).toBe("Live PDF");
 	});
 
 	it("falls back directly for a post-build root-relative resource", async () => {
