@@ -1,5 +1,28 @@
 export type InternationalString = Record<string, string[]>;
 
+export const STATIC_SITE_INFO_BEHAVIOR = "static-site-info";
+export const STATIC_SITE_ROUTE_PROFILE =
+	"https://digirati.com/iiif/static-site-route-service/v1";
+export const GITHUB_PROFILE = "https://github.com/";
+
+export interface LinkingResource {
+	id: string;
+	type?: string;
+	format?: string;
+	profile?: string | string[];
+	label?: InternationalString;
+}
+
+export interface Service extends LinkingResource {
+	source?: string;
+}
+
+export interface StaticSiteRouteService extends Service {
+	type: "Service";
+	profile: typeof STATIC_SITE_ROUTE_PROFILE;
+	source: string;
+}
+
 export interface DescriptiveResource {
 	id: string;
 	type: string;
@@ -8,18 +31,20 @@ export interface DescriptiveResource {
 	metadata?: Array<{ label: InternationalString; value: InternationalString }>;
 	thumbnail?: Array<{ id: string; type?: string }>;
 	logo?: Array<{ id: string; type?: string }>;
-	homepage?: Array<{ id: string; label?: InternationalString }>;
-	provider?: Array<DescriptiveResource>;
+	homepage?: LinkingResource[];
+	seeAlso?: LinkingResource[];
+	service?: Service[];
+	provider?: DescriptiveResource[];
 	behavior?: string[];
 }
 
 export interface IIIFCollectionItem extends DescriptiveResource {
-	type: "Collection" | "Manifest" | string;
+	type: string;
 }
 
 export interface IIIFCollection extends DescriptiveResource {
 	type: "Collection";
-	items: IIIFCollectionItem[];
+	items?: IIIFCollectionItem[];
 }
 
 export interface IIIFManifest extends DescriptiveResource {
@@ -28,22 +53,10 @@ export interface IIIFManifest extends DescriptiveResource {
 }
 
 export interface SiteConfig {
-	collection: string;
 	defaultLanguage?: string;
 }
 
-export interface SiteNode {
-	resource: IIIFCollection | IIIFManifest;
-	path: string;
-	children: SiteNode[];
-	error?: string;
-}
-
-export interface SiteData {
-	config: Required<SiteConfig>;
-	info: IIIFCollection;
-	root: SiteNode;
-}
+export const RESERVED_PATHS = new Set(["info", "collections"]);
 
 export function text(value: InternationalString | undefined, language = "en") {
 	if (!value) return "";
@@ -62,22 +75,8 @@ export function imageId(
 	return resource[field]?.[0]?.id;
 }
 
-export function slugFromId(id: string) {
-	let segment: string;
-	try {
-		const url = new URL(id);
-		segment = url.pathname.replace(/\/+$/, "").split("/").pop() || "";
-	} catch {
-		segment = id.split(/[?#]/)[0].replace(/\/+$/, "").split("/").pop() || "";
-	}
-	return decodeURIComponent(segment)
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-|-$/g, "");
-}
-
-export function isInfoId(id: string) {
-	return slugFromId(id) === "info";
+export function isExhibition(behavior: unknown) {
+	return Array.isArray(behavior) && behavior.includes("exhibition");
 }
 
 export function viewerType(behavior: string[] = []) {
@@ -86,156 +85,201 @@ export function viewerType(behavior: string[] = []) {
 	return "exhibition" as const;
 }
 
-function normalizeAnnotationBodies(value: unknown) {
-	if (!value || typeof value !== "object") return;
-	const item = value as Record<string, unknown>;
-	if (item.type === "Annotation" && item.body == null) item.body = [];
-	for (const child of Object.values(item)) {
-		if (Array.isArray(child)) child.forEach(normalizeAnnotationBodies);
-		else normalizeAnnotationBodies(child);
-	}
+export function normalizePath(path: string) {
+	return path
+		.split("/")
+		.filter(Boolean)
+		.map((part) => decodeURIComponent(part))
+		.join("/");
 }
 
-async function getJson(url: string) {
-	const response = await fetch(url);
-	if (!response.ok)
-		throw new Error(`Unable to load ${url} (${response.status})`);
-	return response.json() as Promise<unknown>;
-}
-
-function resource(value: unknown, expected?: "Collection" | "Manifest") {
-	if (!value || typeof value !== "object")
-		throw new Error("IIIF resource is not an object");
-	const item = value as DescriptiveResource;
-	if (!item.id || !item.type || (expected && item.type !== expected)) {
-		throw new Error(`Expected a IIIF ${expected || "resource"}`);
-	}
-	if (
-		item.type === "Collection" &&
-		!Array.isArray((item as IIIFCollection).items)
-	) {
-		(item as IIIFCollection).items = [];
-	}
-	if (item.type === "Manifest") normalizeAnnotationBodies(item);
-	return item as IIIFCollection | IIIFManifest;
-}
-
-export function validateConfig(value: unknown): Required<SiteConfig> {
-	if (
-		!value ||
-		typeof value !== "object" ||
-		typeof (value as SiteConfig).collection !== "string"
-	) {
-		throw new Error("site.config.json must contain a collection URL");
-	}
-	const config = value as SiteConfig;
+export function pathSegment(id: string) {
+	let pathname = id;
 	try {
-		new URL(config.collection);
+		pathname = new URL(id).pathname;
 	} catch {
-		throw new Error("site.config.json collection must be an absolute URL");
+		pathname = id.split(/[?#]/)[0];
+	}
+	const segment = pathname.replace(/\/+$/, "").split("/").pop() || "";
+	return decodeURIComponent(segment);
+}
+
+function httpUrl(value: string) {
+	const url = new URL(value);
+	if (
+		(url.protocol !== "http:" && url.protocol !== "https:") ||
+		url.username ||
+		url.password
+	) {
+		throw new Error("Expected an HTTP(S) URL without credentials");
+	}
+	return url;
+}
+
+function withoutTrailingSlash(pathname: string) {
+	return pathname === "/" ? "" : pathname.replace(/\/+$/, "");
+}
+
+function hasProfile(
+	resource: { profile?: string | string[] },
+	profile: string,
+) {
+	return Array.isArray(resource.profile)
+		? resource.profile.includes(profile)
+		: resource.profile === profile;
+}
+
+function hasLabel(resource: LinkingResource, value: string) {
+	return Object.values(resource.label || {}).some((values) =>
+		values?.includes(value),
+	);
+}
+
+export function findRouteService(
+	resource?: Pick<DescriptiveResource, "service"> | null,
+): StaticSiteRouteService | null {
+	const matches =
+		resource?.service?.filter((service) =>
+			hasProfile(service, STATIC_SITE_ROUTE_PROFILE),
+		) || [];
+	if (matches.length > 1)
+		throw new Error("Static-site info has more than one route service");
+	const service = matches[0];
+	if (!service) return null;
+	if (service.type !== "Service" || !service.id || !service.source)
+		throw new Error("Static-site route service is invalid");
+	try {
+		httpUrl(service.id);
+		httpUrl(service.source);
+	} catch {
+		throw new Error("Static-site route service is invalid");
 	}
 	return {
-		collection: config.collection,
-		defaultLanguage: config.defaultLanguage || "en",
+		...service,
+		type: "Service",
+		profile: STATIC_SITE_ROUTE_PROFILE,
+		source: service.source,
 	};
 }
 
-export async function loadSite(configUrl: string): Promise<SiteData> {
-	const config = validateConfig(await getJson(configUrl));
-	const rootCollection = resource(
-		await getJson(config.collection),
-		"Collection",
-	) as IIIFCollection;
-	const infoRef = rootCollection.items.find(
-		(item) => item.type === "Collection" && isInfoId(item.id),
+export function findSiteHomepage(
+	resource?: Pick<DescriptiveResource, "homepage"> | null,
+) {
+	const homepages =
+		resource?.homepage?.filter((homepage) => homepage.format === "text/html") ||
+		[];
+	return (
+		homepages.find((homepage) => hasLabel(homepage, "Visit the site")) ||
+		homepages[0] ||
+		null
 	);
-	if (!infoRef)
-		throw new Error(
-			"The root collection must contain a Collection ending in /info",
-		);
-	const info = resource(
-		await getJson(infoRef.id),
-		"Collection",
-	) as IIIFCollection;
-	const visited = new Set<string>();
-
-	async function visit(
-		item: IIIFCollection | IIIFManifest,
-		parentPath: string,
-	): Promise<SiteNode> {
-		if (visited.has(item.id))
-			throw new Error(`Repeated or cyclic IIIF resource: ${item.id}`);
-		visited.add(item.id);
-		const slug = item.id === rootCollection.id ? "" : slugFromId(item.id);
-		if (item.id !== rootCollection.id && (!slug || slug === "info"))
-			throw new Error(`Invalid reserved slug for ${item.id}`);
-		const path = [parentPath, slug].filter(Boolean).join("/");
-		if (item.type === "Manifest") return { resource: item, path, children: [] };
-
-		const supported = item.items
-			.filter(
-				(child) => child.type === "Collection" || child.type === "Manifest",
-			)
-			.filter((child) => !isInfoId(child.id));
-		const slugs = supported.map((child) => slugFromId(child.id));
-		const duplicate = slugs.find(
-			(candidate, index) => !candidate || slugs.indexOf(candidate) !== index,
-		);
-		if (duplicate !== undefined)
-			throw new Error(
-				`Empty or duplicate sibling slug "${duplicate}" in ${item.id}`,
-			);
-
-		const children: SiteNode[] = [];
-		for (const child of supported) {
-			try {
-				const loaded = resource(
-					await getJson(child.id),
-					child.type as "Collection" | "Manifest",
-				);
-				children.push(await visit(loaded, path));
-			} catch (error) {
-				if (child.type === "Collection") {
-					children.push({
-						resource: child as IIIFCollection,
-						path: [path, slugFromId(child.id)].filter(Boolean).join("/"),
-						children: [],
-						error:
-							error instanceof Error
-								? error.message
-								: "Unable to load collection",
-					});
-				} else {
-					throw error;
-				}
-			}
-		}
-		return { resource: item, path, children };
-	}
-
-	return { config, info, root: await visit(rootCollection, "") };
 }
 
-export function findNode(root: SiteNode, path: string) {
-	const normalized = path.replace(/^\/+|\/+$/g, "");
-	const stack = [root];
-	while (stack.length) {
-		const node = stack.pop();
-		if (!node) break;
-		if (node.path === normalized) return node;
-		stack.push(...node.children);
-	}
-}
-
-export function breadcrumbs(root: SiteNode, target: SiteNode) {
-	const result: SiteNode[] = [];
-	function walk(node: SiteNode): boolean {
-		result.push(node);
-		if (node === target) return true;
-		for (const child of node.children) if (walk(child)) return true;
-		result.pop();
+function isGithubRepository(resource: LinkingResource) {
+	try {
+		const url = httpUrl(resource.id);
+		return (
+			url.hostname.toLowerCase() === "github.com" &&
+			url.pathname.split("/").filter(Boolean).length === 2
+		);
+	} catch {
 		return false;
 	}
-	walk(root);
-	return result;
+}
+
+function isHttpLink(resource: LinkingResource) {
+	try {
+		httpUrl(resource.id);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+export function findGithubRepository(
+	resource?: Pick<DescriptiveResource, "seeAlso"> | null,
+) {
+	const links = resource?.seeAlso || [];
+	return (
+		links.find(
+			(link) => hasProfile(link, GITHUB_PROFILE) && isHttpLink(link),
+		) ||
+		links.find(isGithubRepository) ||
+		null
+	);
+}
+
+export function sourcePath(rootUrl: string, resourceUrl: string) {
+	try {
+		const root = httpUrl(rootUrl);
+		const resource = httpUrl(resourceUrl);
+		if (root.origin !== resource.origin) return;
+		const prefix = withoutTrailingSlash(root.pathname);
+		const pathname = withoutTrailingSlash(resource.pathname);
+		if (pathname === prefix) return "";
+		if (!pathname.startsWith(`${prefix}/`)) return;
+		return normalizePath(pathname.slice(prefix.length + 1));
+	} catch {
+		return;
+	}
+}
+
+export function mapResourceToSite(
+	service: StaticSiteRouteService,
+	resourcePublicId: string,
+) {
+	try {
+		const target = httpUrl(service.id);
+		const source = httpUrl(service.source);
+		const resource = httpUrl(resourcePublicId);
+		const sourcePathname = withoutTrailingSlash(source.pathname);
+		const resourcePathname = withoutTrailingSlash(resource.pathname);
+		if (
+			resource.origin !== source.origin ||
+			(resourcePathname !== sourcePathname &&
+				!resourcePathname.startsWith(`${sourcePathname}/`))
+		)
+			return null;
+		const relativePath =
+			resourcePathname === sourcePathname
+				? ""
+				: resourcePathname.slice(sourcePathname.length + 1);
+		const targetPath = withoutTrailingSlash(target.pathname);
+		target.pathname = relativePath
+			? `${targetPath}/${relativePath}`
+			: `${targetPath}/`;
+		target.search = "";
+		target.hash = "";
+		return target;
+	} catch {
+		return null;
+	}
+}
+
+export function sameResource(left: string, right: string) {
+	try {
+		const normalize = (value: string) => {
+			const url = httpUrl(value);
+			url.search = "";
+			url.hash = "";
+			url.pathname = withoutTrailingSlash(url.pathname);
+			return url.toString();
+		};
+		return normalize(left) === normalize(right);
+	} catch {
+		return false;
+	}
+}
+
+export function remoteUrl(rootUrl: string, path: string) {
+	const encoded = normalizePath(path)
+		.split("/")
+		.map(encodeURIComponent)
+		.join("/");
+	return `${rootUrl.replace(/\/+$/, "")}/${encoded}`;
+}
+
+export function isReservedPath(path: string) {
+	const first = normalizePath(path).split("/")[0];
+	return Boolean(first && RESERVED_PATHS.has(first));
 }

@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite dev --port 3032",
     "generate-routes": "tsr generate",
+    "prebuild": "node -e \"require('node:fs').rmSync('.iiif/dev',{recursive:true,force:true})\"",
     "build": "vite build && node scripts/pages-fallback.mjs",
     "preview": "vite preview",
     "test": "vitest run",
@@ -17,7 +18,7 @@
     "check": "biome check"
   },
   "dependencies": {
-    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1",
+    "@atlas-viewer/atlas": "3.1.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-query": "latest",
@@ -27,9 +28,11 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
+    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-iiif-vault": "2.0.8",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
@@ -43,6 +46,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "iiif-hss": "https://pkg.pr.new/digirati-co-uk/headless-static-site/iiif-hss@03a30ff",
     "jsdom": "^28.1.0",
     "typescript": "^6.0.2",
     "vite": "^8.0.0",

@@ -1,157 +1,138 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-	findNode,
+	findGithubRepository,
+	findRouteService,
+	findSiteHomepage,
+	GITHUB_PROFILE,
 	imageId,
-	loadSite,
-	slugFromId,
+	isExhibition,
+	isReservedPath,
+	mapResourceToSite,
+	pathSegment,
+	remoteUrl,
+	STATIC_SITE_ROUTE_PROFILE,
+	type StaticSiteRouteService,
+	sourcePath,
 	text,
-	validateConfig,
 	viewerType,
 } from "./iiif";
 
-afterEach(() => vi.unstubAllGlobals());
+const routeService = {
+	id: "https://example.github.io/exhibitions/",
+	type: "Service" as const,
+	profile: STATIC_SITE_ROUTE_PROFILE,
+	source: "https://iiif.example/58/my-site/",
+} satisfies StaticSiteRouteService;
 
-describe("IIIF helpers", () => {
-	it("selects language and fallbacks", () => {
+describe("IIIF presentation helpers", () => {
+	it("selects international strings with predictable fallbacks", () => {
 		expect(text({ en: ["English"], nl: ["Nederlands"] }, "nl")).toBe(
 			"Nederlands",
 		);
 		expect(text({ none: ["Neutral"] }, "fr")).toBe("Neutral");
+		expect(text({ de: ["Deutsch"] }, "fr")).toBe("Deutsch");
 		expect(text(undefined)).toBe("");
 		expect(imageId({ thumbnail: [{ id: "image.jpg" }] }, "thumbnail")).toBe(
 			"image.jpg",
 		);
 	});
 
-	it("normalizes slugs and viewer behaviors", () => {
-		expect(slugFromId("https://example.org/A%20Great_Show/?v=1")).toBe(
-			"a-great-show",
-		);
-		expect(viewerType(["slideshow"])).toBe("slideshow");
+	it("requires the exact exhibition behavior", () => {
+		expect(isExhibition(["exhibition"])).toBe(true);
+		expect(isExhibition(["scroll", "exhibition"])).toBe(true);
+		expect(isExhibition(["Exhibition"])).toBe(false);
+		expect(isExhibition(["exhibition-page"])).toBe(false);
+		expect(isExhibition(undefined)).toBe(false);
+	});
+
+	it("prioritizes slideshow, then scroll, then the full-page viewer", () => {
+		expect(viewerType(["scroll", "slideshow"])).toBe("slideshow");
 		expect(viewerType(["scroll"])).toBe("scroll");
 		expect(viewerType(["fullpage"])).toBe("exhibition");
 	});
 
-	it("validates configuration", () => {
-		expect(validateConfig({ collection: "https://example.org/root" })).toEqual({
-			collection: "https://example.org/root",
-			defaultLanguage: "en",
-		});
-		expect(() => validateConfig({ collection: "/root" })).toThrow(
-			"absolute URL",
+	it("maps root-relative resource URLs and reserves application paths", () => {
+		const root = "https://example.org/iiif/root";
+		expect(sourcePath(root, root)).toBe("");
+		expect(sourcePath(root, `${root}/folder/a%20show`)).toBe("folder/a show");
+		expect(sourcePath(root, "https://elsewhere.test/show")).toBeUndefined();
+		expect(remoteUrl(root, "folder/a show")).toBe(`${root}/folder/a%20show`);
+		expect(pathSegment("https://example.org/folder/a%20show?x=1")).toBe(
+			"a show",
 		);
-	});
-});
-
-describe("collection traversal", () => {
-	it("builds nested routes, excludes info, and tolerates a failed child collection", async () => {
-		const resources: Record<string, unknown> = {
-			"https://site/config.json": { collection: "https://iiif/root" },
-			"https://iiif/root": {
-				id: "https://iiif/root",
-				type: "Collection",
-				items: [
-					{ id: "https://iiif/root/info", type: "Collection" },
-					{ id: "https://iiif/group", type: "Collection" },
-					{ id: "https://iiif/broken", type: "Collection" },
-					{ id: "https://iiif/ignored", type: "Canvas" },
-				],
-			},
-			"https://iiif/root/info": {
-				id: "https://iiif/root/info",
-				type: "Collection",
-				label: { en: ["Site"] },
-				items: [],
-			},
-			"https://iiif/group": {
-				id: "https://iiif/group",
-				type: "Collection",
-				items: [{ id: "https://iiif/show", type: "Manifest" }],
-			},
-			"https://iiif/show": {
-				id: "https://iiif/show",
-				type: "Manifest",
-				label: { en: ["Show"] },
-				items: [],
-			},
-		};
-		vi.stubGlobal(
-			"fetch",
-			vi.fn(async (url: string) =>
-				resources[url]
-					? new Response(JSON.stringify(resources[url]))
-					: new Response("", { status: 503 }),
-			),
-		);
-		const site = await loadSite("https://site/config.json");
-		expect(site.root.children.map((node) => node.path)).toEqual([
-			"group",
-			"broken",
-		]);
-		expect(findNode(site.root, "group/show")?.resource.type).toBe("Manifest");
-		expect(findNode(site.root, "broken")?.error).toContain("503");
+		expect(isReservedPath("info")).toBe(true);
+		expect(isReservedPath("exhibitions/new")).toBe(false);
+		expect(isReservedPath("collections")).toBe(true);
+		expect(isReservedPath("folder/info")).toBe(false);
 	});
 
-	it("rejects duplicate sibling slugs", async () => {
-		const resources: Record<string, unknown> = {
-			config: { collection: "https://iiif/root" },
-			"https://iiif/root": {
-				id: "https://iiif/root",
-				type: "Collection",
-				items: [
-					{ id: "https://iiif/root/info", type: "Collection" },
-					{ id: "https://one/same", type: "Manifest" },
-					{ id: "https://two/same", type: "Manifest" },
-				],
-			},
-			"https://iiif/root/info": {
-				id: "https://iiif/root/info",
-				type: "Collection",
-				items: [],
-			},
+	it("selects the portal-owned homepage, repository, and route service", () => {
+		const unrelated = { id: "https://example.org/other", type: "Text" };
+		const info = {
+			service: [
+				{ id: "https://example.org/search", profile: "search" },
+				routeService,
+			],
+			homepage: [
+				{ ...unrelated, format: "text/html" },
+				{
+					id: routeService.id,
+					type: "Text",
+					format: "text/html",
+					label: { en: ["Visit the site"] },
+				},
+			],
+			seeAlso: [
+				unrelated,
+				{
+					id: "https://github.com/example/site",
+					profile: GITHUB_PROFILE,
+				},
+			],
 		};
-		vi.stubGlobal(
-			"fetch",
-			vi.fn(
-				async (url: string) => new Response(JSON.stringify(resources[url])),
-			),
+		expect(findRouteService(info)).toMatchObject(routeService);
+		expect(findSiteHomepage(info)?.id).toBe(routeService.id);
+		expect(findGithubRepository(info)?.id).toBe(
+			"https://github.com/example/site",
 		);
-		await expect(loadSite("config")).rejects.toThrow("duplicate sibling slug");
 	});
 
-	it("normalizes omitted annotation bodies for viewers", async () => {
-		const resources: Record<string, unknown> = {
-			config: { collection: "https://iiif/root" },
-			"https://iiif/root": {
-				id: "https://iiif/root",
-				type: "Collection",
-				items: [
-					{ id: "https://iiif/root/info", type: "Collection" },
-					{ id: "https://iiif/show", type: "Manifest" },
-				],
-			},
-			"https://iiif/root/info": {
-				id: "https://iiif/root/info",
-				type: "Collection",
-			},
-			"https://iiif/show": {
-				id: "https://iiif/show",
-				type: "Manifest",
-				items: [{ type: "Annotation", id: "a" }],
-			},
-		};
-		vi.stubGlobal(
-			"fetch",
-			vi.fn(
-				async (url: string) => new Response(JSON.stringify(resources[url])),
+	it("rejects ambiguous or invalid route services", () => {
+		expect(() =>
+			findRouteService({ service: [routeService, routeService] }),
+		).toThrow("more than one");
+		expect(() =>
+			findRouteService({ service: [{ ...routeService, source: "ftp://bad" }] }),
+		).toThrow("invalid");
+	});
+
+	it("maps source IDs to the same project paths as the portal", () => {
+		expect(
+			mapResourceToSite(
+				routeService,
+				"https://iiif.example/58/my-site",
+			)?.toString(),
+		).toBe(routeService.id);
+		expect(
+			mapResourceToSite(
+				routeService,
+				"https://iiif.example/58/my-site/folder/a%20show",
+			)?.toString(),
+		).toBe("https://example.github.io/exhibitions/folder/a%20show");
+	});
+
+	it("rejects lookalike, unrelated, and credential-bearing route IDs", () => {
+		expect(
+			mapResourceToSite(routeService, "https://iiif.example/58/my-site-2/item"),
+		).toBeNull();
+		expect(
+			mapResourceToSite(routeService, "https://other.example/58/my-site"),
+		).toBeNull();
+		expect(
+			mapResourceToSite(
+				routeService,
+				"https://user:secret@iiif.example/58/my-site",
 			),
-		);
-		const site = await loadSite("config");
-		const annotation = (
-			findNode(site.root, "show")?.resource as {
-				items: Array<{ body?: unknown[] }>;
-			}
-		).items[0];
-		expect(annotation.body).toEqual([]);
+		).toBeNull();
 	});
 });
