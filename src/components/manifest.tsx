@@ -137,14 +137,14 @@ function Viewer({ page }: { page: ResourcePageData }) {
 					}}
 				/>
 			) : null}
-			{download ? (
+			{/*{download ? (
 				<section className="download">
 					<h2>Download current image</h2>
 					<a href={download.url} target="_blank" rel="noopener noreferrer">
 						Full image{download.dimensions}
 					</a>
 				</section>
-			) : null}
+			) : null}*/}
 			<ManifestMetadata
 				allowHtml={false}
 				showEmptyMessage={false}

@@ -186,6 +186,8 @@ export function externalViewerLinks(manifestId: string) {
 		url.searchParams.set(key, manifest.toString());
 		return url.toString();
 	};
+	const universalViewer = new URL("https://www.universalviewer.dev");
+	universalViewer.hash = `?${new URLSearchParams({ manifest: manifest.toString() })}`;
 	return [
 		{
 			label: "Theseus",
@@ -195,10 +197,7 @@ export function externalViewerLinks(manifestId: string) {
 			label: "Mirador",
 			href: query("https://projectmirador.org/embed/", "iiif-content"),
 		},
-		{
-			label: "Universal Viewer",
-			href: `https://www.universalviewer.dev/uv.html#?manifest=${manifest}`,
-		},
+		{ label: "Universal Viewer", href: universalViewer.toString() },
 	];
 }
 
