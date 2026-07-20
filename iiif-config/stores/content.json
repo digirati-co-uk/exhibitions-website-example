@@ -1,6 +1,6 @@
 {
   "type": "iiif-remote",
-  "url": "https://presentation-api.dlcs.digirati.io/177/leeds/website",
+  "url": "https://cr.rewrite.digirati.io/leeds/website",
   "saveManifests": false,
   "run": ["site"]
 }
