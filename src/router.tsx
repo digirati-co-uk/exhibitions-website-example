@@ -13,6 +13,7 @@ export function getRouter() {
 		defaultPreload: "intent",
 		defaultPreloadStaleTime: 0,
 		basepath: import.meta.env.BASE_URL,
+		trailingSlash: "always",
 	});
 
 	setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient });

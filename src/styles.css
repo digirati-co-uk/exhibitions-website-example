@@ -51,6 +51,7 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 .card:hover { border-color: var(--color-line); transform: translateY(-2px); box-shadow: 0 .6rem 1.5rem rgba(32, 29, 26, .07); }
 .card-thumbnail { display: block; aspect-ratio: 16 / 10; overflow: hidden; background: var(--color-border); }
 .card-thumbnail img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .2s ease; }
+.card-thumbnail-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: var(--color-muted); font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .card:hover .card-thumbnail img { transform: scale(1.02); }
 .card-body { padding: 1.5rem; }
 .card .eyebrow { font-size: .68rem; }
@@ -100,7 +101,13 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 .site-button { cursor: pointer; border: 1px solid var(--color-ink); border-radius: 2px; padding: .65rem 1.2rem; color: var(--color-paper); background: var(--color-ink); font: inherit; font-weight: 600; transition: background .15s ease, border-color .15s ease; }
 .site-button:hover { background: var(--color-accent); border-color: var(--color-accent); }
 
-footer { border-top: 1px solid var(--color-border); padding: 2rem 1.5rem; text-align: center; color: var(--color-muted); font-size: .85rem; }
+.site-footer { border-top: 1px solid var(--color-border); color: var(--color-muted); font-size: .85rem; }
+.footer-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem 2rem; width: min(76rem, calc(100% - 3rem)); margin: auto; padding: 2rem 0; }
+.footer-name { margin: 0; color: var(--color-ink); font-family: var(--font-serif); font-weight: 600; }
+.site-footer nav { display: flex; gap: 1.25rem; }
+.footer-statement { grid-column: 1 / -1; padding-top: 1rem; border-top: 1px solid var(--color-border); }
+.footer-statement > strong { color: var(--color-ink); }
+.footer-statement > div, .footer-statement p { display: inline; margin: 0 0 0 .5rem; }
 
 @media (max-width: 36rem) {
 	.leeds-logo { width: 2rem; object-position: right; }
@@ -112,5 +119,7 @@ footer { border-top: 1px solid var(--color-border); padding: 2rem 1.5rem; text-a
 	.page { width: min(100% - 2rem, 76rem); padding-top: 2rem; }
 	.metadata div { grid-template-columns: 1fr; gap: .2rem; }
 	.canvas-panel { min-height: 24rem; }
+	.footer-inner { grid-template-columns: 1fr; width: min(100% - 2rem, 76rem); }
+	.footer-statement { grid-column: auto; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

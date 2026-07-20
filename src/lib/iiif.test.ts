@@ -118,7 +118,7 @@ describe("IIIF presentation helpers", () => {
 				routeService,
 				"https://iiif.example/58/my-site/folder/a%20show",
 			)?.toString(),
-		).toBe("https://example.github.io/exhibitions/folder/a%20show");
+		).toBe("https://example.github.io/exhibitions/folder/a%20show/");
 	});
 
 	it("rejects lookalike, unrelated, and credential-bearing route IDs", () => {

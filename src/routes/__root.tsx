@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestUrl } from "@tanstack/react-start/server";
-import { Header } from "#/components/site";
+import { Footer, Header } from "#/components/site";
 import { imageId, text } from "#/lib/iiif";
 import { siteQuery } from "#/lib/queries";
 import appCss from "../styles.css?url";
@@ -76,10 +76,6 @@ function SiteLayout() {
 	const language = site.defaultLanguage;
 	const name = text(site.info.label, language) || "Exhibitions";
 	const exhibitions = site.entriesByPath.get("exhibitions");
-	const provider = (site.info.provider || [])
-		.map((item) => text(item.label, language))
-		.filter(Boolean)
-		.join(", ");
 	return (
 		<>
 			<a className="skip-link" href="#main">
@@ -88,20 +84,18 @@ function SiteLayout() {
 			<Header
 				name={name}
 				logo={imageId(site.info, "logo")}
-				repository={site.repository}
 				exhibitionsPath={
 					exhibitions?.type === "Collection" ? exhibitions.path : undefined
 				}
 			/>
 			<Outlet />
-			<footer>
-				<p>{provider || name}</p>
-				<p>
-					<a href={site.rootUrl} rel="noopener noreferrer">
-						View IIIF
-					</a>
-				</p>
-			</footer>
+			<Footer
+				name={name}
+				iiif={site.rootUrl}
+				repository={site.repository}
+				requiredStatement={site.info.requiredStatement}
+				language={language}
+			/>
 		</>
 	);
 }

@@ -260,7 +260,7 @@ export function mapResourceToSite(
 				: resourcePathname.slice(sourcePathname.length + 1);
 		const targetPath = withoutTrailingSlash(target.pathname);
 		target.pathname = relativePath
-			? `${targetPath}/${relativePath}`
+			? `${targetPath}/${relativePath}/`
 			: `${targetPath}/`;
 		target.search = "";
 		target.hash = "";

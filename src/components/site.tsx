@@ -1,22 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-	type DescriptiveResource,
-	imageId,
-	safeHttpUrl,
-	text,
-} from "#/lib/iiif";
+import { type DescriptiveResource, safeHttpUrl, text } from "#/lib/iiif";
 import type { ResourcePageData, SiteIndexEntry } from "#/lib/site-data";
 
 export function Header({
 	name,
 	logo,
-	repository,
 	exhibitionsPath,
 }: {
 	name: string;
 	logo?: string;
-	repository?: string;
 	exhibitionsPath?: string;
 }) {
 	return (
@@ -35,11 +28,6 @@ export function Header({
 							Exhibitions
 						</Link>
 					) : null}
-					{repository ? (
-						<a href={repository} rel="noopener noreferrer">
-							Source on GitHub
-						</a>
-					) : null}
 				</nav>
 				<img
 					className="leeds-logo"
@@ -48,6 +36,74 @@ export function Header({
 				/>
 			</div>
 		</header>
+	);
+}
+
+export function Footer({
+	name,
+	iiif,
+	repository,
+	requiredStatement,
+	language,
+}: {
+	name: string;
+	iiif: string;
+	repository?: string;
+	requiredStatement?: DescriptiveResource["requiredStatement"];
+	language: string;
+}) {
+	const statement = text(requiredStatement?.value, language);
+	return (
+		<footer className="site-footer">
+			<div className="footer-inner">
+				<p className="footer-name">{name}</p>
+				<nav aria-label="Site information">
+					<a href={iiif} rel="noopener noreferrer">
+						IIIF
+					</a>
+					{repository ? (
+						<a href={repository} rel="noopener noreferrer">
+							GitHub
+						</a>
+					) : null}
+				</nav>
+				{statement ? (
+					<div className="footer-statement">
+						<strong>
+							{text(requiredStatement?.label, language) || "Attribution"}
+						</strong>
+						{/* The IIIF required statement explicitly permits formatted HTML. */}
+						{/* biome-ignore lint/security/noDangerouslySetInnerHtml: required statement is authored IIIF content */}
+						<div dangerouslySetInnerHTML={{ __html: statement }} />
+					</div>
+				) : null}
+			</div>
+		</footer>
+	);
+}
+
+function CardThumbnail({ entry }: { entry: SiteIndexEntry }) {
+	const [index, setIndex] = useState(0);
+	const thumbnail = entry.thumbnail?.[index]?.id;
+	return (
+		<Link
+			to="/$"
+			params={{ _splat: entry.path }}
+			className="card-thumbnail"
+			tabIndex={-1}
+			aria-hidden="true"
+		>
+			{thumbnail ? (
+				<img
+					src={thumbnail}
+					alt=""
+					loading="lazy"
+					onError={() => setIndex(index + 1)}
+				/>
+			) : (
+				<span className="card-thumbnail-placeholder">{entry.type}</span>
+			)}
+		</Link>
 	);
 }
 
@@ -63,20 +119,9 @@ export function Cards({
 	return (
 		<div className="cards">
 			{entries.map((entry) => {
-				const thumbnail = imageId(entry, "thumbnail");
 				return (
 					<article className="card" key={entry.id}>
-						{thumbnail ? (
-							<Link
-								to="/$"
-								params={{ _splat: entry.path }}
-								className="card-thumbnail"
-								tabIndex={-1}
-								aria-hidden="true"
-							>
-								<img src={thumbnail} alt="" loading="lazy" />
-							</Link>
-						) : null}
+						<CardThumbnail entry={entry} />
 						<div className="card-body">
 							<span className="eyebrow">
 								{entry.type === "Collection"

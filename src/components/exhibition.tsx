@@ -1,8 +1,8 @@
 import {
-	DelftExhibition,
-	DelftPresentation,
-	ScrollExhibition,
-} from "exhibition-viewer/library";
+	LeedsFullPageExhibition,
+	LeedsScrollExhibition,
+	LeedsSlideshowExhibition,
+} from "exhibition-viewer/leeds";
 import { type IIIFManifest, viewerType } from "#/lib/iiif";
 
 export function ExhibitionViewer({
@@ -16,7 +16,7 @@ export function ExhibitionViewer({
 	if (type === "scroll")
 		return (
 			<div className="viewer viewer-scroll exhibition-viewer">
-				<ScrollExhibition
+				<LeedsScrollExhibition
 					manifest={manifest as never}
 					language={language}
 					viewObjectLinks={[]}
@@ -26,7 +26,7 @@ export function ExhibitionViewer({
 	if (type === "slideshow")
 		return (
 			<div className="viewer viewer-slideshow exhibition-viewer">
-				<DelftPresentation
+				<LeedsSlideshowExhibition
 					manifest={manifest as never}
 					language={language}
 					viewObjectLinks={[]}
@@ -35,7 +35,7 @@ export function ExhibitionViewer({
 		);
 	return (
 		<div className="viewer viewer-fullpage">
-			<DelftExhibition
+			<LeedsFullPageExhibition
 				manifest={manifest as never}
 				language={language}
 				viewObjectLinks={[]}

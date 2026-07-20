@@ -18,7 +18,7 @@ export const Route = createFileRoute("/collections")({
 			match.context.baseUrl,
 		]);
 		const canonical = site
-			? new URL("collections", site.routeService.id).toString()
+			? new URL("collections/", site.routeService.id).toString()
 			: undefined;
 		return {
 			meta: [
