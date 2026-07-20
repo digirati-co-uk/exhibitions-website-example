@@ -243,10 +243,11 @@ export function createSiteIndex({
 		throw new Error(
 			"The configured root must contain one marked direct info Collection",
 		);
-	if (!sameResource(routeService.source, rootUrl))
+	if (!sameResource(routeService.source, rootUrl)) {
 		throw new Error(
-			"Static-site route service source does not match the root Collection",
+			`Static-site route service source does not match the root Collection ${routeService.source}, ${rootUrl}`,
 		);
+	}
 	for (const item of catalogCollection?.items || []) {
 		const known = entriesById.get(item.id);
 		if (!known) continue;
@@ -391,7 +392,7 @@ export function createSiteData(options: SiteDataOptions) {
 			throw new Error("Static-site info is missing its route service");
 		if (!sameResource(routeService.source, root.id))
 			throw new Error(
-				"Static-site route service source does not match the root Collection",
+				`Static-site route service source does not match the root Collection ${routeService.source}, ${root.id}`,
 			);
 		if (!mapResourceToSite(routeService, root.id))
 			throw new Error("Static-site route service does not map the site root");

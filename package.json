@@ -18,7 +18,7 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "3.1.1",
+    "@atlas-viewer/atlas": "3.2.3",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-query": "latest",
@@ -28,11 +28,11 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
-    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1",
+    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-iiif-vault": "2.0.8",
+    "react-iiif-vault": "2.0.17",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {

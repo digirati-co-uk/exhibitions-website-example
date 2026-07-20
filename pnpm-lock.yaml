@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@atlas-viewer/atlas':
-        specifier: 3.1.1
-        version: 3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
+        specifier: 3.2.3
+        version: 3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
       '@tailwindcss/vite':
         specifier: ^4.1.18
         version: 4.3.2(vite@8.1.4(@types/node@22.20.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -42,8 +42,8 @@ importers:
         specifier: ^1.132.0
         version: 1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(rolldown@1.1.5)(vite@8.1.4(@types/node@22.20.1)(jiti@2.7.0)(yaml@2.9.0))
       exhibition-viewer:
-        specifier: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1
-        version: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3)
+        specifier: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337
+        version: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3)
       lucide-react:
         specifier: ^0.545.0
         version: 0.545.0(react@19.2.7)
@@ -54,8 +54,8 @@ importers:
         specifier: ^19.2.0
         version: 19.2.7(react@19.2.7)
       react-iiif-vault:
-        specifier: 2.0.8
-        version: 2.0.8(@atlas-viewer/atlas@3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: 2.0.17
+        version: 2.0.17(@atlas-viewer/atlas@3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       tailwindcss:
         specifier: ^4.1.18
         version: 4.3.2
@@ -138,9 +138,10 @@ packages:
       react-native:
         optional: true
 
-  '@atlas-viewer/atlas@3.1.1':
-    resolution: {integrity: sha512-PqREjEfssP46ObaZJozYAHRUZfrtP7ntSb8M/OkVypDU+XQAmreEELUy3VFABxYRHkSeeqLbDdz/iA+RmSqqSg==}
+  '@atlas-viewer/atlas@3.2.3':
+    resolution: {integrity: sha512-7o28II8v5T/0IM78H0OiI6gyS2x+MM6ShukBKb8hlM4RzZ+WWINrsMWc6vLhmDKpVQ8UJ7wk5MezFFUpp8qILw==}
     peerDependencies:
+      '@iiif/helpers': '>=1.1.0'
       react: '>=17.0'
       react-dom: '>=17.0'
       react-native: '*'
@@ -405,6 +406,11 @@ packages:
 
   '@iiif/helpers@1.6.0':
     resolution: {integrity: sha512-TgVs+TgezKsRIJtrFTVZBqPXCYDHzxXbm9cRybqTgdLZyg99DICJYaLn4ZWdPBzqDV8HR2kSIvkkTLklmLxR8w==}
+    peerDependencies:
+      '@iiif/parser': ^2.2.8
+
+  '@iiif/helpers@1.6.1':
+    resolution: {integrity: sha512-IqCdaUU4zITrtKlKzLfa79Sdm559fFa40CtRslPQkSMwKmurmMBmTrUACEYgXRdhUaeBaX/gb//4bxeWUzgpZQ==}
     peerDependencies:
       '@iiif/parser': ^2.2.8
 
@@ -1517,8 +1523,8 @@ packages:
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
-  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1:
-    resolution: {integrity: sha512-Hjz6EibMPRX3TEpKIzL8hLY8ZQdPDuGMCpqsxC+4OBF6/tAQaIINnrTGdRgjD/ewOw63AVfFPF54WYksnwhwHA==, tarball: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1}
+  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337:
+    resolution: {integrity: sha512-MhfZPJ6qIXcHi2TcmJN9TrUqhkLEB6lEejHc9LN4Cn7y1wi7wLV77Rk8Fc22kf7si/WnbwRFXVWeHE+a//JQ5w==, tarball: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337}
     version: 1.0.14
     peerDependencies:
       typescript: ^5.0.0
@@ -2041,8 +2047,8 @@ packages:
       typescript:
         optional: true
 
-  react-iiif-vault@2.0.8:
-    resolution: {integrity: sha512-Z32JLlQbHSY+WzMZSA82qmlg0fAGa/0P21VeI2QdSuNh9NcRfFAFC6B5BjmD812ovFueoVUVxhWnfY8vQ8Nkrg==}
+  react-iiif-vault@2.0.17:
+    resolution: {integrity: sha512-3r7X/zM1yrHocvkQH7U7J4x+nPG1p5sCoDNnt27xDU8rFKGJVd3g1FHVcZpTujymcgqp/fVICL3qahirMB16Kw==}
     peerDependencies:
       '@atlas-viewer/atlas': ^3.1.0
       react: ^18.2.0 || ^19.2.0
@@ -2606,16 +2612,14 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.7(react@19.2.7)
 
-  '@atlas-viewer/atlas@3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)':
+  '@atlas-viewer/atlas@3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 1.5.7(@iiif/parser@2.2.9)
-      '@iiif/parser': 2.2.9
+      '@iiif/helpers': 1.6.1(@iiif/parser@2.2.14)
       '@iiif/presentation-3': 2.2.3
       react: 19.2.7
       react-reconciler: 0.33.0(react@19.2.7)
-      react-use-measure: 2.1.7(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       scheduler: 0.27.0
     optionalDependencies:
       react-dom: 19.2.7(react@19.2.7)
@@ -2885,6 +2889,18 @@ snapshots:
       svg-arc-to-cubic-bezier: 3.2.0
 
   '@iiif/helpers@1.6.0(@iiif/parser@2.2.14)':
+    dependencies:
+      '@iiif/parser': 2.2.14
+      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
+      '@iiif/presentation-3': 2.2.3
+      '@iiif/presentation-3-normalized': 0.9.7
+      '@types/geojson': 7946.0.13
+    optionalDependencies:
+      abs-svg-path: 0.1.1
+      parse-svg-path: 0.1.2
+      svg-arc-to-cubic-bezier: 3.2.0
+
+  '@iiif/helpers@1.6.1(@iiif/parser@2.2.14)':
     dependencies:
       '@iiif/parser': 2.2.14
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
@@ -3986,12 +4002,12 @@ snapshots:
 
   eventemitter3@5.0.4: {}
 
-  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f8d1ea1(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3):
+  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@4b45337(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3):
     dependencies:
-      '@atlas-viewer/atlas': 3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
+      '@atlas-viewer/atlas': 3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
       '@headlessui/react': 1.7.18(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@iiif/helpers': 1.5.7(@iiif/parser@2.2.9)
-      '@iiif/parser': 2.2.9
+      '@iiif/helpers': 1.6.1(@iiif/parser@2.2.14)
+      '@iiif/parser': 2.2.14
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
       '@types/react': 18.3.31
@@ -4004,7 +4020,7 @@ snapshots:
       react-aria: 3.50.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react-dom: 19.2.7(react@19.2.7)
       react-i18next: 16.6.6(i18next@25.10.10(typescript@6.0.3))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
-      react-iiif-vault: 2.0.8(@atlas-viewer/atlas@3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@18.3.31)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react-iiif-vault: 2.0.17(@atlas-viewer/atlas@3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@18.3.31)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       react-lazy-load-image-component: 1.6.3(react@19.2.7)
       reveal.js: 5.2.1
       tailwind-merge: 2.6.1
@@ -4583,12 +4599,12 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       typescript: 6.0.3
 
-  react-iiif-vault@2.0.8(@atlas-viewer/atlas@3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@18.3.31)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-iiif-vault@2.0.17(@atlas-viewer/atlas@3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@18.3.31)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
-      '@atlas-viewer/atlas': 3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
+      '@atlas-viewer/atlas': 3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
       '@floating-ui/react': 0.27.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@iiif/helpers': 1.5.7(@iiif/parser@2.2.9)
-      '@iiif/parser': 2.2.9
+      '@iiif/helpers': 1.6.0(@iiif/parser@2.2.14)
+      '@iiif/parser': 2.2.14
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
@@ -4605,12 +4621,12 @@ snapshots:
       - '@types/react'
       - immer
 
-  react-iiif-vault@2.0.8(@atlas-viewer/atlas@3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  react-iiif-vault@2.0.17(@atlas-viewer/atlas@3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
-      '@atlas-viewer/atlas': 3.1.1(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
+      '@atlas-viewer/atlas': 3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
       '@floating-ui/react': 0.27.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@iiif/helpers': 1.5.7(@iiif/parser@2.2.9)
-      '@iiif/parser': 2.2.9
+      '@iiif/helpers': 1.6.0(@iiif/parser@2.2.14)
+      '@iiif/parser': 2.2.14
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
