@@ -489,10 +489,7 @@ export function createSiteData(options: SiteDataOptions) {
 
 	async function loadKnown(site: SiteIndex, entry: SiteIndexEntry) {
 		try {
-			const loaded = await client.loadResource(
-				entry.hssSlug || entry.id,
-				entry.type,
-			);
+			const loaded = await client.loadResource(entry.id, entry.type);
 			const resource = asResource(loaded.resource);
 			if (!resource) throw new Error("Remote IIIF resource is unavailable");
 			return pageFromResource(
@@ -515,6 +512,33 @@ export function createSiteData(options: SiteDataOptions) {
 	}
 
 	async function loadDynamic(site: SiteIndex, path: string) {
+		const parts = path.split("/").filter(Boolean);
+		const knownParentPath = parts.slice(0, -1).join("/");
+		const parentEntry = site.entriesByPath.get(knownParentPath);
+		if (knownParentPath && parentEntry?.type === "Collection") {
+			const parentLoaded = await client.loadCollection(parentEntry.id);
+			const parent = asResource(parentLoaded.resource);
+			const item =
+				parent?.type === "Collection"
+					? parent.items?.find(
+							(candidate) => pathSegment(candidate.id) === parts.at(-1),
+						)
+					: undefined;
+			const entry = item && childEntry(site, item, knownParentPath);
+			if (entry) {
+				const loaded = await client.loadResource(
+					item.id,
+					item.type as "Collection" | "Manifest",
+				);
+				const resource = asResource(loaded.resource);
+				if (resource)
+					return pageFromResource(site, entry, resource, resource.id, [
+						...breadcrumbs(site, parentEntry),
+						entry,
+					]);
+			}
+		}
+
 		try {
 			const direct = await client.loadResource(remoteUrl(site.rootUrl, path));
 			const resource = asResource(direct.resource);
@@ -532,12 +556,9 @@ export function createSiteData(options: SiteDataOptions) {
 			// A non-root-relative child needs bounded ancestor traversal below.
 		}
 
-		const parts = path.split("/").filter(Boolean);
 		const rootEntry = site.entriesByPath.get("");
 		if (!rootEntry) return;
-		const rootLoaded = await client.loadCollection(
-			rootEntry.hssSlug || rootEntry.id,
-		);
+		const rootLoaded = await client.loadCollection(rootEntry.id);
 		let collection = asResource(rootLoaded.resource);
 		if (collection?.type !== "Collection") return;
 		const dynamicBreadcrumbs = [rootEntry];
@@ -583,16 +604,16 @@ export function createSiteData(options: SiteDataOptions) {
 	}
 
 	async function loadExhibitions(site: SiteIndex) {
-		const loaded = await client.loadCollection("collections/exhibitions");
-		const collection = asResource(loaded.resource);
-		if (collection?.type !== "Collection")
-			throw new Error("The generated Exhibitions Collection is unavailable");
 		return site.exhibitions;
 	}
 
 	async function loadFeatured(site: SiteIndex) {
-		const loaded = await client.loadCollection("collections/featured");
-		const collection = asResource(loaded.resource);
+		const collection = asResource(
+			await json(
+				fetchFn,
+				localUrl(iiifBase, "collections/featured/collection.json"),
+			),
+		);
 		if (!collection) return [];
 		if (collection.type !== "Collection")
 			throw new Error("The generated Featured Collection is malformed");

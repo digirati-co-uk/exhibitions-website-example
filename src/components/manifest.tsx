@@ -77,23 +77,8 @@ export function canvasDownload(canvas: unknown) {
 	}
 }
 
-function Viewer({ page }: { page: ResourcePageData }) {
+function Viewer() {
 	const state = useSimpleViewer();
-	const canvasIndex =
-		state.sequence[state.currentSequenceIndex]?.[0] ??
-		state.currentSequenceIndex;
-	const canvasId = state.items[canvasIndex]?.id;
-	const canvases =
-		page.resource?.type === "Manifest" && Array.isArray(page.resource.items)
-			? page.resource.items
-			: [];
-	const canvas = canvases.find(
-		(item) =>
-			Boolean(item) &&
-			typeof item === "object" &&
-			(item as AnyRecord).id === canvasId,
-	);
-	const download = canvasDownload(canvas);
 	return (
 		<>
 			<div
@@ -137,14 +122,6 @@ function Viewer({ page }: { page: ResourcePageData }) {
 					}}
 				/>
 			) : null}
-			{/*{download ? (
-				<section className="download">
-					<h2>Download current image</h2>
-					<a href={download.url} target="_blank" rel="noopener noreferrer">
-						Full image{download.dimensions}
-					</a>
-				</section>
-			) : null}*/}
 			<ManifestMetadata
 				allowHtml={false}
 				showEmptyMessage={false}
@@ -190,7 +167,7 @@ export function ManifestPage({
 				>
 					<LanguageProvider language={language}>
 						<SimpleViewerProvider manifest={page.jsonUrl}>
-							<Viewer page={page} />
+							<Viewer />
 						</SimpleViewerProvider>
 					</LanguageProvider>
 				</ClientOnly>

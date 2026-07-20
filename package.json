@@ -28,7 +28,7 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
-    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38",
+    "exhibition-viewer": "https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

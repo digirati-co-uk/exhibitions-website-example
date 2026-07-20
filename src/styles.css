@@ -75,7 +75,8 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--color-accent); 
 .viewer { width: 100%; min-height: 70vh; margin: 0 auto 4rem; }
 .viewer-scroll { width: 100%; --exv-scroll-title-background: var(--color-paper); --exv-scroll-title-color: var(--color-ink); --exv-scroll-annotation-background: var(--color-surface); --exv-scroll-annotation-color: var(--color-ink); --exv-scroll-annotation-radius: 0; --exv-scroll-annotation-max-width: 34em; --exv-scroll-info-block-background: #222; --exv-scroll-info-block-color: #fff; --exv-scroll-splash-overlay: rgba(0, 0, 0, .48); }
 .viewer-scroll .exv-scroll > :first-child { position: sticky !important; top: 0 !important; z-index: 30 !important; }
-.viewer-slideshow { height: calc(100dvh - var(--site-header-height)); }
+.viewer-slideshow { height: calc(100dvh - var(--site-header-height)); min-height: 0; }
+.viewer.viewer-slideshow > .h-screen { height: 100%; }
 .viewer-slideshow .exhibition-slideshow-slide > * { width: 100%; }
 .viewer-fullpage, .viewer-slideshow { --delft-background: var(--color-paper); --delft-background-secondary: var(--color-surface); --delft-text: var(--color-ink); --delft-muted-text: var(--color-muted); --delft-accent: var(--color-accent); --delft-control-bar: #222; --delft-control-bar-border: #111; --delft-control-hover: rgba(255, 255, 255, .12); --delft-progress-bar: var(--color-accent); --delft-close-background: #222; --delft-close-background-hover: #333; --delft-close-text: #fff; --delft-title-card: var(--color-surface); --delft-title-card-text: var(--color-ink); --delft-info-block: #222; --delft-info-block-text: #fff; --delft-viewer-background: #222; --delft-title-transform: none; }
 .viewer-fullpage { max-width: 100rem; margin-bottom: 4.5rem; padding-top: 2em }

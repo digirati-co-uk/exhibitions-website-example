@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { type DescriptiveResource, safeHttpUrl, text } from "#/lib/iiif";
 import type { ResourcePageData, SiteIndexEntry } from "#/lib/site-data";
+import { ManifestThumbnail } from "./thumbnail";
 
 export function Header({
 	name,
@@ -22,9 +23,9 @@ export function Header({
 					<Link to="/" activeOptions={{ exact: true }}>
 						Home
 					</Link>
-					<Link to="/collections">Collections</Link>
+					<Link to="/collections/">Collections</Link>
 					{exhibitionsPath ? (
-						<Link to="/$" params={{ _splat: exhibitionsPath }}>
+						<Link to="/$/" params={{ _splat: exhibitionsPath }}>
 							Exhibitions
 						</Link>
 					) : null}
@@ -87,13 +88,15 @@ function CardThumbnail({ entry }: { entry: SiteIndexEntry }) {
 	const thumbnail = entry.thumbnail?.[index]?.id;
 	return (
 		<Link
-			to="/$"
+			to="/$/"
 			params={{ _splat: entry.path }}
 			className="card-thumbnail"
 			tabIndex={-1}
 			aria-hidden="true"
 		>
-			{thumbnail ? (
+			{entry.type === "Manifest" ? (
+				<ManifestThumbnail manifest={entry} />
+			) : thumbnail ? (
 				<img
 					src={thumbnail}
 					alt=""
@@ -131,7 +134,7 @@ export function Cards({
 										: "Manifest"}
 							</span>
 							<h2>
-								<Link to="/$" params={{ _splat: entry.path }}>
+								<Link to="/$/" params={{ _splat: entry.path }}>
 									{text(entry.label, language) || "Untitled"}
 								</Link>
 							</h2>
@@ -334,7 +337,7 @@ export function Breadcrumbs({
 							</span>
 						) : (
 							<Link
-								to={entry.path ? "/$" : "/"}
+								to={entry.path ? "/$/" : "/"}
 								params={
 									entry.path ? { _splat: entry.path } : (undefined as never)
 								}

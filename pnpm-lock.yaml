@@ -42,8 +42,8 @@ importers:
         specifier: ^1.132.0
         version: 1.168.19(@tanstack/react-router@1.170.17(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(rolldown@1.1.5)(vite@8.1.4(@types/node@22.20.1)(jiti@2.7.0)(yaml@2.9.0))
       exhibition-viewer:
-        specifier: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38
-        version: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3)
+        specifier: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781
+        version: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3)
       lucide-react:
         specifier: ^0.545.0
         version: 0.545.0(react@19.2.7)
@@ -1523,8 +1523,8 @@ packages:
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
-  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38:
-    resolution: {tarball: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38}
+  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781:
+    resolution: {integrity: sha512-qD/e4RtcUMj1P3IM+A1wdsOtKUdkb4Y7LP19GTrc3oEwxm9G/Lwn247bIWjjI7D+AbctzxtJqg9XPgpUGK+bsw==, tarball: https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781}
     version: 1.0.14
     peerDependencies:
       typescript: ^5.0.0
@@ -4002,7 +4002,7 @@ snapshots:
 
   eventemitter3@5.0.4: {}
 
-  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@f7efd38(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3):
+  exhibition-viewer@https://pkg.pr.new/digirati-co-uk/exhibition-viewer/exhibition-viewer@3734781(react-reconciler@0.33.0(react@19.2.7))(typescript@6.0.3):
     dependencies:
       '@atlas-viewer/atlas': 3.2.3(@iiif/helpers@1.6.1(@iiif/parser@2.2.14))(react-dom@19.2.7(react@19.2.7))(react-reconciler@0.33.0(react@19.2.7))(react@19.2.7)
       '@headlessui/react': 1.7.18(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
