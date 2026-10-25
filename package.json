@@ -49,7 +49,7 @@
     "iiif-hss": "https://pkg.pr.new/digirati-co-uk/headless-static-site/iiif-hss@03a30ff",
     "jsdom": "^28.1.0",
     "typescript": "^6.0.2",
-    "vite": "^8.0.0",
+    "vite": "^8.1.6",
     "vitest": "^4.1.5"
   },
   "pnpm": {
